@@ -95,4 +95,29 @@ mod tests {
         dial.rotate(Rotation::Left(300));
         assert_eq!(dial.read_position(), 50);
     }
+
+    #[test]
+    fn test_mini_game() {
+        let mut dial = Dial::new();
+        dial.rotate(Rotation::parse("L68"));
+        assert_eq!(dial.read_position(), 82);
+        dial.rotate(Rotation::parse("L30"));
+        assert_eq!(dial.read_position(), 52);
+        dial.rotate(Rotation::parse("R48"));
+        assert_eq!(dial.read_position(), 0);
+        dial.rotate(Rotation::parse("L5"));
+        assert_eq!(dial.read_position(), 95);
+        dial.rotate(Rotation::parse("R60"));
+        assert_eq!(dial.read_position(), 55);
+        dial.rotate(Rotation::parse("L55"));
+        assert_eq!(dial.read_position(), 0);
+        dial.rotate(Rotation::parse("L1"));
+        assert_eq!(dial.read_position(), 99);
+        dial.rotate(Rotation::parse("L99"));
+        assert_eq!(dial.read_position(), 0);
+        dial.rotate(Rotation::parse("R14"));
+        assert_eq!(dial.read_position(), 14);
+        dial.rotate(Rotation::parse("L82"));
+        assert_eq!(dial.read_position(), 32);
+    }
 }
