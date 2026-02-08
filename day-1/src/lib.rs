@@ -1,3 +1,5 @@
+use crate::Rotation::{Left, Right};
+
 struct Dial {
     current_position: u8,
 }
@@ -20,9 +22,22 @@ impl Dial {
     }
 }
 
+#[derive(Debug, PartialEq)]
 enum Rotation {
     Right(u8),
     Left(u8),
+}
+
+impl Rotation {
+    fn parse(raw_rotation: &str) -> Self {
+        let (direction, position_str) = raw_rotation.trim().split_at(1);
+        let position = position_str.parse().unwrap();
+        match direction {
+            "L" => Left(position),
+            "R" => Right(position),
+            _ => panic!("Unknown rotation: {}", raw_rotation),
+        }
+    }
 }
 
 #[cfg(test)]
@@ -60,5 +75,10 @@ mod tests {
         let mut dial = Dial::new();
         dial.rotate(Rotation::Left(51));
         assert_eq!(dial.read_position(), 99);
+    }
+
+    #[test]
+    fn test_rotation_enum_parsing() {
+        assert_eq!(Rotation::parse("L32"), Rotation::Left(32));
     }
 }
