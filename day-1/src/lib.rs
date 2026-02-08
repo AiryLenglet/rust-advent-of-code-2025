@@ -1,7 +1,7 @@
 use crate::Rotation::{Left, Right};
 
 struct Dial {
-    current_position: u8,
+    current_position: u16,
 }
 
 impl Dial {
@@ -9,7 +9,7 @@ impl Dial {
         Self { current_position: 50 }
     }
 
-    fn read_position(&self) -> u8 {
+    fn read_position(&self) -> u16 {
         self.current_position
     }
 
@@ -24,8 +24,8 @@ impl Dial {
 
 #[derive(Debug, PartialEq)]
 enum Rotation {
-    Right(u8),
-    Left(u8),
+    Right(u16),
+    Left(u16),
 }
 
 impl Rotation {
@@ -80,5 +80,12 @@ mod tests {
     #[test]
     fn test_rotation_enum_parsing() {
         assert_eq!(Rotation::parse("L32"), Rotation::Left(32));
+    }
+
+    #[test]
+    fn test_rotate_dial_multiple_times() {
+        let mut dial = Dial::new();
+        dial.rotate(Rotation::Right(300));
+        assert_eq!(dial.read_position(), 50);
     }
 }
