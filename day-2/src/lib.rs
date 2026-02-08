@@ -15,6 +15,10 @@ impl IdRange {
             end,
         }
     }
+
+    fn iter(&self) -> impl Iterator<Item = u16> {
+        (self.start..=self.end).into_iter()
+    }
 }
 
 #[cfg(test)]
@@ -25,5 +29,12 @@ mod tests {
     fn test_parse() {
         let range = IdRange::parse("1-3");
         assert_eq!(range, IdRange{ start: 1, end: 3 });
+    }
+
+    #[test]
+    fn test_iter() {
+        let range = IdRange::parse("1-3");
+        let iter = range.iter();
+        assert_eq!(iter.collect::<Vec<_>>(), vec![1, 2, 3]);
     }
 }
