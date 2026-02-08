@@ -42,6 +42,7 @@ impl Rotation {
 
 #[cfg(test)]
 mod tests {
+    use std::fs;
     use super::*;
 
     #[test]
@@ -119,5 +120,21 @@ mod tests {
         assert_eq!(dial.read_position(), 14);
         dial.rotate(Rotation::parse("L82"));
         assert_eq!(dial.read_position(), 32);
+    }
+
+    #[test]
+    fn test_solution() {
+        let input = fs::read_to_string("./resource/input.txt").expect("Failed to read input file.");
+        let mut dial = Dial::new();
+        let mut zero_count = 0;
+        input.lines()
+            .map(|line| Rotation::parse(line))
+            .for_each(|rotation| {
+                dial.rotate(rotation);
+                if dial.read_position() == 0 {
+                    zero_count += 1;
+                }
+            });
+        println!("pass word is {}", zero_count);
     }
 }
