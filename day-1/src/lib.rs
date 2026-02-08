@@ -1,7 +1,7 @@
 use crate::Rotation::{Left, Right};
 
 struct Dial {
-    current_position: u16,
+    current_position: i16,
 }
 
 impl Dial {
@@ -10,14 +10,14 @@ impl Dial {
     }
 
     fn read_position(&self) -> u16 {
-        self.current_position
+        self.current_position as u16
     }
 
     fn rotate(&mut self, rotation: Rotation) {
-        const DIAL_POSITION_COUNT: u16 = 100;
+        const DIAL_POSITION_COUNT: i16 = 100;
         self.current_position +=  match rotation {
-            Rotation::Right(position) => position,
-            Rotation::Left(position) => DIAL_POSITION_COUNT - (position % DIAL_POSITION_COUNT),
+            Rotation::Right(position) => position as i16,
+            Rotation::Left(position) => DIAL_POSITION_COUNT - (position as i16 % DIAL_POSITION_COUNT),
         };
         self.current_position %= DIAL_POSITION_COUNT;
     }
