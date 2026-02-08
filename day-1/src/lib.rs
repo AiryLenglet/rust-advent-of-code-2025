@@ -137,5 +137,6 @@ mod tests {
                 }
             });
         println!("pass word is {}", zero_count);
+        assert_eq!(zero_count, 1021);
     }
 }
