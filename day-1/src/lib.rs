@@ -14,7 +14,8 @@ impl Dial {
     fn rotate(&mut self, rotation: Rotation) {
         self.current_position +=  match rotation {
             Rotation::Right(position) => position,
-        }
+        };
+        self.current_position %= 100;
     }
 }
 
@@ -36,5 +37,12 @@ mod tests {
         let mut dial = Dial::new();
         dial.rotate(Rotation::Right(1));
         assert_eq!(dial.read_position(), 51);
+    }
+
+    #[test]
+    fn test_rotate_dial_past_99() {
+        let mut dial = Dial::new();
+        dial.rotate(Rotation::Right(50));
+        assert_eq!(dial.read_position(), 0);
     }
 }
