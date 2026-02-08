@@ -17,8 +17,11 @@ impl Dial {
         const DIAL_POSITION_COUNT: i16 = 100;
         self.current_position +=  match rotation {
             Rotation::Right(position) => position as i16,
-            Rotation::Left(position) => DIAL_POSITION_COUNT - (position as i16 % DIAL_POSITION_COUNT),
+            Rotation::Left(position) => -1 * (position as i16),
         };
+        if self.current_position < 0  {
+            self.current_position = DIAL_POSITION_COUNT + self.current_position % DIAL_POSITION_COUNT;
+        }
         self.current_position %= DIAL_POSITION_COUNT;
     }
 }
@@ -70,6 +73,13 @@ mod tests {
         let mut dial = Dial::new();
         dial.rotate(Rotation::Left(1));
         assert_eq!(dial.read_position(), 49);
+    }
+
+    #[test]
+    fn test_rotate_dial_left_to_0() {
+        let mut dial = Dial::new();
+        dial.rotate(Rotation::Left(150));
+        assert_eq!(dial.read_position(), 0);
     }
 
     #[test]
