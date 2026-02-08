@@ -14,11 +14,12 @@ impl Dial {
     }
 
     fn rotate(&mut self, rotation: Rotation) {
+        const DIAL_POSITION_COUNT: u16 = 100;
         self.current_position +=  match rotation {
             Rotation::Right(position) => position,
-            Rotation::Left(position) => 100 - (position % 100),
+            Rotation::Left(position) => DIAL_POSITION_COUNT - (position % DIAL_POSITION_COUNT),
         };
-        self.current_position %= 100;
+        self.current_position %= DIAL_POSITION_COUNT;
     }
 }
 
