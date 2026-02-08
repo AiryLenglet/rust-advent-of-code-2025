@@ -16,13 +16,13 @@ impl Dial {
 
     fn rotate(&mut self, rotation: Rotation) {
         const DIAL_POSITION_COUNT: i16 = 100;
-        let ini = self.current_position;
+        let start_position = self.current_position;
         self.current_position +=  match rotation {
             Rotation::Right(position) => position as i16,
-            Rotation::Left(position) => -1 * (position as i16),
+            Rotation::Left(position) => -(position as i16),
         };
         let passed_0 = if self.current_position <= 0 {
-            ((-1 * self.current_position) / DIAL_POSITION_COUNT) + if ini == 0 {0 } else {1 }
+            ((-self.current_position) / DIAL_POSITION_COUNT) + if start_position == 0 { 0 } else { 1 }
         } else {
             self.current_position / DIAL_POSITION_COUNT
         };
