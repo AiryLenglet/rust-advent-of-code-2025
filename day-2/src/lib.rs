@@ -21,6 +21,19 @@ impl IdRange {
     }
 }
 
+fn invalid(id: u32) -> Option<u32> {
+    let id_str = id.to_string();
+    if id_str.len() % 2 == 1 {
+        return None;
+    }
+    let mid = id_str.len() / 2;
+    let (upper, lower) = id_str.split_at(mid);
+    if upper == lower {
+        return Some(id)
+    }
+    None
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -36,5 +49,13 @@ mod tests {
         let range = IdRange::parse("1-3");
         let iter = range.iter();
         assert_eq!(iter.collect::<Vec<_>>(), vec![1, 2, 3]);
+    }
+
+    #[test]
+    fn test_invalid() {
+        assert_eq!(invalid(1), None);
+        assert_eq!(invalid(11), Some(11));
+        assert_eq!(invalid(99), Some(99));
+        assert_eq!(invalid(3446456), None);
     }
 }
