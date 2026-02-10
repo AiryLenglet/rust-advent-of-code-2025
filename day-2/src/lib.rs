@@ -1,27 +1,27 @@
 #[derive(Debug, PartialEq)]
 struct IdRange {
-    start: u32,
-    end: u32,
+    start: u64,
+    end: u64,
 }
 
 impl IdRange {
     fn parse(id_range: &str) -> Self {
         let (start_str, end_str) = id_range.split_once('-')
             .expect("Malformed id {id_range}");
-        let start = start_str.parse::<u32>().unwrap();
-        let end = end_str.parse::<u32>().unwrap();
+        let start = start_str.parse::<u64>().unwrap();
+        let end = end_str.parse::<u64>().unwrap();
         Self {
             start,
             end,
         }
     }
 
-    fn iter(self) -> impl Iterator<Item = u32> {
+    fn iter(self) -> impl Iterator<Item = u64> {
         self.start..=self.end
     }
 }
 
-fn invalid(id: u32) -> Option<u32> {
+fn invalid(id: u64) -> Option<u64> {
     let id_str = id.to_string();
     if id_str.len() % 2 == 1 {
         return None;
@@ -36,6 +36,7 @@ fn invalid(id: u32) -> Option<u32> {
 
 #[cfg(test)]
 mod tests {
+    use std::fs;
     use super::*;
 
     #[test]
@@ -79,5 +80,17 @@ mod tests {
             .map(|id| id.unwrap_or_else(|| 0))
             .reduce(|a, b| a + b);
         assert_eq!(result, Some(1227775554));
+    }
+
+    #[test]
+    fn test_solution() {
+        let input = fs::read_to_string("./resource/input.txt").expect("Failed to read input file.");
+        let result = input.split(',')
+            .map(|str_range| IdRange::parse(str_range))
+            .flat_map(|id_range| id_range.iter())
+            .map(|id| invalid(id))
+            .map(|id| id.unwrap_or_else(|| 0))
+            .reduce(|a, b| a + b);
+        assert_eq!(result, Some(18952700150));
     }
 }
