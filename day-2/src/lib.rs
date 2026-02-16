@@ -32,13 +32,25 @@ impl IdRange {
 
 fn invalid(id: u64) -> Option<u64> {
     let id_str = id.to_string();
-    if id_str.len() % 2 == 1 {
-        return None;
-    }
-    let mid = id_str.len() / 2;
-    let (upper, lower) = id_str.split_at(mid);
-    if upper == lower {
-        return Some(id)
+    for chunk_size in 1..id_str.len() {
+        let chunks = id_str.as_bytes()
+            .chunks(chunk_size)
+            .map(str::from_utf8)
+            .collect::<Result<Vec<&str>, _>>()
+            .expect("Unable to chunk id");
+
+        let first = chunks[0];
+        let mut all_equals = true;
+        for chunk in chunks {
+            if chunk != first {
+                all_equals = false;
+                break;
+            }
+        }
+
+        if all_equals {
+            return Some(id);
+        }
     }
     None
 }
@@ -66,6 +78,7 @@ mod tests {
         assert_eq!(invalid(11), Some(11));
         assert_eq!(invalid(99), Some(99));
         assert_eq!(invalid(3446456), None);
+        assert_eq!(invalid(121212), Some(121212));
     }
 
     #[test]
@@ -99,6 +112,6 @@ mod tests {
             .map(|id| invalid(id))
             .map(|id| id.unwrap_or_else(|| 0))
             .reduce(|a, b| a + b);
-        assert_eq!(result, Some(18952700150));
+        assert_eq!(result, Some(28858486244));
     }
 }
