@@ -4,6 +4,19 @@ struct IdRange {
     end: u64,
 }
 
+impl Iterator for IdRange {
+    type Item = u64;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.start > self.end {
+            return None;
+        }
+        let result = Some(self.start);
+        self.start += 1;
+        result
+    }
+}
+
 impl IdRange {
     fn parse(id_range: &str) -> Self {
         let (start_str, end_str) = id_range.split_once('-')
@@ -14,10 +27,6 @@ impl IdRange {
             start,
             end,
         }
-    }
-
-    fn iter(self) -> impl Iterator<Item = u64> {
-        self.start..=self.end
     }
 }
 
@@ -48,8 +57,7 @@ mod tests {
     #[test]
     fn test_iter() {
         let range = IdRange::parse("1-3");
-        let iter = range.iter();
-        assert_eq!(iter.collect::<Vec<_>>(), vec![1, 2, 3]);
+        assert_eq!(range.into_iter().collect::<Vec<_>>(), vec![1, 2, 3]);
     }
 
     #[test]
@@ -75,7 +83,7 @@ mod tests {
         
         let result = raw_ranges.iter()
             .map(|str_range| IdRange::parse(str_range))
-            .flat_map(|id_range| id_range.iter())
+            .flat_map(|id_range| id_range)
             .map(|id| invalid(id))
             .map(|id| id.unwrap_or_else(|| 0))
             .reduce(|a, b| a + b);
@@ -87,7 +95,7 @@ mod tests {
         let input = fs::read_to_string("./resource/input.txt").expect("Failed to read input file.");
         let result = input.split(',')
             .map(|str_range| IdRange::parse(str_range))
-            .flat_map(|id_range| id_range.iter())
+            .flat_map(|id_range| id_range)
             .map(|id| invalid(id))
             .map(|id| id.unwrap_or_else(|| 0))
             .reduce(|a, b| a + b);
