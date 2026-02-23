@@ -53,6 +53,7 @@ fn find_movable_rolls(setup: &str) -> u64 {
 
 #[cfg(test)]
 mod tests {
+    use std::fs;
     use crate::{adjacent_keys, find_movable_rolls};
 
     #[test]
@@ -74,5 +75,12 @@ mod tests {
 @.@.@@@.@.";
 
         assert_eq!(find_movable_rolls(setup), 13);
+    }
+
+    #[test]
+    fn test_solution() {
+        let input = fs::read_to_string("./resource/input.txt").expect("Failed to read input file.");
+        let result = find_movable_rolls(&input);
+        assert_eq!(1395, result);
     }
 }
