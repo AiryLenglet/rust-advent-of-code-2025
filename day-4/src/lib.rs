@@ -1,15 +1,23 @@
 use std::collections::HashMap;
+use std::fmt::Display;
 
 fn adjacent_keys(key: String) -> Vec<String> {
-    let (i, j) = key.split_once("#")
+    let (i, j) = key.split_once(KEY_SEPARATOR)
         .expect("Invalid key");
     let int_i = i.parse::<usize>().expect("Malformed index") as i64;
     let int_j = j.parse::<usize>().expect("Malformed index") as i64;
     (int_i-1..=int_i+1)
         .flat_map(|x| (int_j-1..=int_j+1)
-            .map(move |y| format!("{}#{}", x, y)))
+            .map(move |y| compute_key(x, y)))
         .filter(|k| !key.eq(k))
         .collect()
+}
+
+const ROLL_THRESHOLD: usize = 4;
+const KEY_SEPARATOR: &str = "#";
+
+fn compute_key<T: Display, U: Display>(x: T, y: U) -> String {
+    format!("{}{}{}", x, KEY_SEPARATOR, y)
 }
 
 fn find_movable_rolls(setup: &str) -> u64 {
@@ -18,7 +26,7 @@ fn find_movable_rolls(setup: &str) -> u64 {
     setup.lines().enumerate()
         .for_each(|(i, line)| {
             line.chars().enumerate().for_each(|(j, c)| {
-                let key = format!("{}#{}", i, j);
+                let key = compute_key(i, j);
                 map.insert(key, c);
             })
         });
@@ -27,12 +35,12 @@ fn find_movable_rolls(setup: &str) -> u64 {
         .map(|(i, line)| {
             line.chars().enumerate().map(|(j, c)| {
                 if c == '@' {
-                    let adjacent_roll = adjacent_keys(format!("{}#{}", i, j))
+                    let adjacent_roll = adjacent_keys(compute_key(i, j))
                         .iter().map(|key| map.get(key))
                         .flatten()
                         .filter(|c| **c == '@')
                         .count();
-                    if adjacent_roll < 4 {
+                    if adjacent_roll < ROLL_THRESHOLD {
                         return 1;
                     }
                     return 0;
@@ -64,7 +72,7 @@ mod tests {
 @.@@@.@@@@
 .@@@@@@@@.
 @.@.@@@.@.";
-        
+
         assert_eq!(find_movable_rolls(setup), 13);
     }
 }
