@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::fmt::Display;
 
-fn adjacent_keys(key: String) -> Vec<String> {
+fn adjacent_keys(key: &String) -> Vec<String> {
     let (i, j) = key.split_once(KEY_SEPARATOR)
         .expect("Invalid key");
     let int_i = i.parse::<usize>().expect("Malformed index") as i64;
@@ -31,24 +31,35 @@ fn find_movable_rolls(setup: &str) -> u64 {
             })
         });
 
-    setup.lines().enumerate()
-        .map(|(i, line)| {
-            line.chars().enumerate().map(|(j, c)| {
-                if c == '@' {
-                    let adjacent_roll = adjacent_keys(compute_key(i, j))
-                        .iter().map(|key| map.get(key))
-                        .flatten()
-                        .filter(|c| **c == '@')
-                        .count();
-                    if adjacent_roll < ROLL_THRESHOLD {
-                        return 1;
+    let mut movable_rolls = 0;
+
+    loop {
+        let rolls = setup.lines().enumerate()
+            .map(|(i, line)| {
+                line.chars().enumerate().map(|(j, c)| {
+                    if c == '@' {
+                        let cell_key = compute_key(i, j);
+                        let adjacent_roll = adjacent_keys(&cell_key)
+                            .iter().map(|key| map.get(key))
+                            .flatten()
+                            .filter(|c| **c == '@')
+                            .count();
+                        if adjacent_roll < ROLL_THRESHOLD {
+                            map.remove(&cell_key);
+                            return 1;
+                        }
+                        return 0;
                     }
-                    return 0;
-                }
-                0
-            }).reduce(|a, b| a + b)
-        }).flatten().reduce(|a, b| a + b)
-        .expect("Malformed index")
+                    0
+                }).reduce(|a, b| a + b)
+            }).flatten().reduce(|a, b| a + b)
+            .expect("Malformed index");
+        if rolls == movable_rolls {
+            break;
+        }
+        movable_rolls = rolls;
+    }
+    movable_rolls
 }
 
 #[cfg(test)]
@@ -58,7 +69,7 @@ mod tests {
 
     #[test]
     fn test_adjacent_keys() {
-        assert_eq!(adjacent_keys(String::from("2#2")), ["1#1", "1#2", "1#3", "2#1", "2#3", "3#1", "3#2", "3#3"]);
+        assert_eq!(adjacent_keys(&String::from("2#2")), ["1#1", "1#2", "1#3", "2#1", "2#3", "3#1", "3#2", "3#3"]);
     }
 
     #[test]
@@ -74,13 +85,13 @@ mod tests {
 .@@@@@@@@.
 @.@.@@@.@.";
 
-        assert_eq!(find_movable_rolls(setup), 13);
+        assert_eq!(find_movable_rolls(setup), 43);
     }
 
     #[test]
     fn test_solution() {
         let input = fs::read_to_string("./resource/input.txt").expect("Failed to read input file.");
         let result = find_movable_rolls(&input);
-        assert_eq!(1395, result);
+        assert_eq!(8451, result);
     }
 }
