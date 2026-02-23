@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 fn adjacent_keys(key: String) -> Vec<String> {
     let (i, j) = key.split_once("#")
         .expect("Invalid key");
@@ -10,10 +12,40 @@ fn adjacent_keys(key: String) -> Vec<String> {
         .collect()
 }
 
+fn find_movable_rolls(setup: &str) -> u64 {
+    let mut map : HashMap<String, char> = HashMap::new();
+
+    setup.lines().enumerate()
+        .for_each(|(i, line)| {
+            line.chars().enumerate().for_each(|(j, c)| {
+                let key = format!("{}#{}", i, j);
+                map.insert(key, c);
+            })
+        });
+
+    setup.lines().enumerate()
+        .map(|(i, line)| {
+            line.chars().enumerate().map(|(j, c)| {
+                if c == '@' {
+                    let adjacent_roll = adjacent_keys(format!("{}#{}", i, j))
+                        .iter().map(|key| map.get(key))
+                        .flatten()
+                        .filter(|c| **c == '@')
+                        .count();
+                    if adjacent_roll < 4 {
+                        return 1;
+                    }
+                    return 0;
+                }
+                0
+            }).reduce(|a, b| a + b)
+        }).flatten().reduce(|a, b| a + b)
+        .expect("Malformed index")
+}
+
 #[cfg(test)]
 mod tests {
-    use std::collections::HashMap;
-    use crate::adjacent_keys;
+    use crate::{adjacent_keys, find_movable_rolls};
 
     #[test]
     fn test_adjacent_keys() {
@@ -32,36 +64,7 @@ mod tests {
 @.@@@.@@@@
 .@@@@@@@@.
 @.@.@@@.@.";
-
-        let mut map : HashMap<String, char> = HashMap::new();
-
-        setup.lines().enumerate()
-            .for_each(|(i, line)| {
-                line.chars().enumerate().for_each(|(j, c)| {
-                    let key = format!("{}#{}", i, j);
-                    map.insert(key, c);
-                })
-            });
-
-        let rolls = setup.lines().enumerate()
-            .map(|(i, line)| {
-                line.chars().enumerate().map(|(j, c)| {
-                    if c == '@' {
-                        let adjacent_roll = adjacent_keys(format!("{}#{}", i, j))
-                            .iter().map(|key| map.get(key))
-                            .flatten()
-                            .filter(|c| **c == '@')
-                            .count();
-                        if adjacent_roll < 4 {
-                            return 1;
-                        }
-                        return 0;
-                    }
-                    0
-                }).reduce(|a, b| a + b)
-            }).flatten().reduce(|a, b| a + b)
-            .expect("Malformed index");
-
-        assert_eq!(rolls, 13);
+        
+        assert_eq!(find_movable_rolls(setup), 13);
     }
 }
