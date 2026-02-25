@@ -16,9 +16,22 @@ fn parse_ids(ids: &str) -> impl Iterator<Item=u64> {
         .map(|line| line.trim().parse::<u64>().expect("Malformed id"))
 }
 
+trait A {
+    fn contains(&mut self, id: u64) -> bool;
+}
+impl<I> A for I
+where
+    I: Iterator<Item = RangeInclusive<u64>>,
+{
+    fn contains(&mut self, id: u64) -> bool {
+        // `any` consumes the iterator lazily and stops at the first `true`.
+        self.any(|range| range.contains(&id))
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::{split, parse_ranges, parse_ids};
+    use crate::{split, parse_ranges, parse_ids, A};
 
     const MINI_GAME_INPUT: &str = r#"
     3-5
@@ -74,5 +87,14 @@ mod tests {
         1
         2
         3"#).collect::<Vec<_>>(), [1,2,3]);
+    }
+
+    #[test]
+    fn test_mini_game() {
+        let (ranges_input, ids_input) = split(MINI_GAME_INPUT);
+        let fresh_ids = parse_ids(ids_input)
+            .filter(|&id| parse_ranges(ranges_input).contains(id))
+            .count();
+        assert_eq!(fresh_ids, 3);
     }
 }
