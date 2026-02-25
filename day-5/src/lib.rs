@@ -31,6 +31,7 @@ where
 
 #[cfg(test)]
 mod tests {
+    use std::fs;
     use crate::{split, parse_ranges, parse_ids, A};
 
     const MINI_GAME_INPUT: &str = r#"
@@ -92,6 +93,16 @@ mod tests {
     #[test]
     fn test_mini_game() {
         let (ranges_input, ids_input) = split(MINI_GAME_INPUT);
+        let fresh_ids = parse_ids(ids_input)
+            .filter(|&id| parse_ranges(ranges_input).contains(id))
+            .count();
+        assert_eq!(fresh_ids, 735);
+    }
+
+    #[test]
+    fn test_solution() {
+        let input = fs::read_to_string("./resource/input.txt").expect("Failed to read input file.");
+        let (ranges_input, ids_input) = split(input.as_str());
         let fresh_ids = parse_ids(ids_input)
             .filter(|&id| parse_ranges(ranges_input).contains(id))
             .count();
