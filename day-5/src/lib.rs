@@ -29,10 +29,21 @@ where
     }
 }
 
+fn merge(left: &RangeInclusive<u64>, right: &RangeInclusive<u64>) -> Option<RangeInclusive<u64>> {
+    if left.contains(&right.start()) {
+        return Some(*left.start()..=*right.end());
+    } else if right.contains(&left.start()) {
+        return Some(*right.start()..=*left.end())
+    }
+    None
+}
+
 #[cfg(test)]
 mod tests {
-    use std::fs;
+    use std::{cmp, fs};
+    use std::ops::RangeInclusive;
     use crate::{split, parse_ranges, parse_ids, A};
+    use super::merge;
 
     const MINI_GAME_INPUT: &str = r#"
     3-5
@@ -108,4 +119,77 @@ mod tests {
             .count();
         assert_eq!(fresh_ids, 3);
     }
+
+    #[test]
+    fn test_merge() {
+        assert_eq!(merge(&(1..=2), &(3..=4)), None);
+        assert_eq!(merge(&(1..=2), &(2..=4)), Some(1..=4));
+        assert_eq!(merge(&(5..=7), &(4..=6)), Some(4..=7));
+    }
+
+    #[test]
+    fn test_solution_part_2() {
+        let input = fs::read_to_string("./resource/input.txt").expect("Failed to read input file.");
+        let (ranges_input, _) = split(input.as_str());
+
+        let f = |distinct_ranges, range| {
+            let mut result = Vec::new();
+            let mut merged = false;
+            for r in distinct_ranges {
+                if let Some(new_range) = merge(&r, &range) {
+                    result.push(new_range);
+                    merged = true;
+                } else {
+                    result.push(r);
+                }
+            }
+            if !merged {
+                result.push(range);
+            }
+            result
+        };
+        let mut folded_ranges: Vec<_> = parse_ranges(ranges_input).collect();
+
+        loop {
+            let before_fold_count = folded_ranges.len();
+            folded_ranges = folded_ranges.into_iter().fold(Vec::new(), f);
+            let after_fold_count = folded_ranges.len();
+            if before_fold_count == after_fold_count {
+                break;
+            }
+        }
+
+        let distinct_ids = folded_ranges
+            .into_iter()
+            .map(|range| range.count())
+            .reduce(|a, b| a + b)
+            .expect("Expected multiple ranges");
+        assert_eq!(distinct_ids, 14);
+    }
+    
+    #[test]
+    fn test_solution_part_2_() {
+        let input = fs::read_to_string("./resource/input.txt").expect("Failed to read input file.");
+        let (ranges_input, _) = split(input.as_str());
+
+        let mut ranges : Vec<_> = parse_ranges(ranges_input).collect();
+        ranges.sort_unstable_by(|left, right| left.start().cmp(&right.start()).then_with(|| left.end().cmp(&right.end())));
+
+        let mut merged : Vec<RangeInclusive<u64>> = Vec::new();
+        for range in ranges {
+            if let Some(last_range) = merged.last_mut() {
+                if range.start() <= last_range.end() {
+                    *last_range = *last_range.start()..=cmp::max(*range.end(), *last_range.end());
+                    continue;
+                }
+            }
+            merged.push(range);
+        }
+        let distinct_ids = merged
+            .into_iter()
+            .map(|range| range.count() as u64)
+            .sum::<u64>();
+        assert_eq!(distinct_ids, 344306344403172);
+    }
+
 }
